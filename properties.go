@@ -10,6 +10,7 @@ import (
 // Properties manages a group of strongly typed properties, immutable
 type Properties interface {
 	List(context.Context) []Property
+	Map(context.Context) map[string]interface{}
 	Named(context.Context, PropertyName) (Property, bool)
 	Filter(context.Context, func(context.Context, Property) bool) []Property
 	Range(context.Context, func(context.Context, Property) bool)
@@ -140,6 +141,17 @@ func (p *Default) List(context.Context) []Property {
 	var result []Property
 	p.syncMap.Range(func(key, value interface{}) bool {
 		result = append(result, value.(Property))
+		return true
+	})
+	return result
+}
+
+// Map returns all the properties as a map
+func (p *Default) Map(ctx context.Context) map[string]interface{} {
+	result := make(map[string]interface{})
+	p.syncMap.Range(func(key, value interface{}) bool {
+		property := value.(Property)
+		result[string(property.Name(ctx))] = property.AnyValue(ctx)
 		return true
 	})
 	return result

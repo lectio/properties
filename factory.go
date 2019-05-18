@@ -66,6 +66,8 @@ func (f *DefaultPropertyFactory) FromAny(ctx context.Context, name string, v int
 	switch value := v.(type) {
 	case string:
 		return f.afterSuccessfulCreate(ctx, &DefaultTextProperty{PropertyName(name), value}, options...)
+	case []string:
+		return f.afterSuccessfulCreate(ctx, &DefaultTextListProperty{PropertyName(name), value}, options...)
 	case time.Time:
 		return f.afterSuccessfulCreate(ctx, &DefaultDateTimeProperty{PropertyName(name), value}, options...)
 	case bool:

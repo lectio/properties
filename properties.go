@@ -24,8 +24,8 @@ type MutableProperties interface {
 	Properties
 	AddMap(context.Context, map[string]interface{}, ...interface{}) (uint, error)
 	AddTextMap(context.Context, map[string]string, ...interface{}) (uint, error)
-	AddAny(context.Context, string, interface{}, ...interface{}) (Property, bool, error)
-	AddText(context.Context, string, string, ...interface{}) (Property, bool, error)
+	Add(context.Context, string, interface{}, ...interface{}) (Property, bool, error)
+	AddParsed(context.Context, string, string, ...interface{}) (Property, bool, error)
 	AddProperty(context.Context, Property, ...interface{}) error
 	Delete(context.Context, PropertyName, ...interface{}) (bool, error)
 	DeleteProperty(context.Context, Property, ...interface{}) (bool, error)
@@ -50,7 +50,7 @@ func (p *Default) AddMap(ctx context.Context, items map[string]interface{}, opti
 
 	var count uint
 	for name, value := range items {
-		_, ok, err := p.AddAny(ctx, name, value, options...)
+		_, ok, err := p.Add(ctx, name, value, options...)
 		if err != nil {
 			return count, err
 		}
@@ -70,7 +70,7 @@ func (p *Default) AddTextMap(ctx context.Context, items map[string]string, optio
 
 	var count uint
 	for name, value := range items {
-		_, ok, err := p.AddText(ctx, name, value, options...)
+		_, ok, err := p.AddParsed(ctx, name, value, options...)
 		if err != nil {
 			return count, err
 		}
@@ -82,8 +82,8 @@ func (p *Default) AddTextMap(ctx context.Context, items map[string]string, optio
 	return count, nil
 }
 
-// AddText adds a single named property of a text value by "smart parsing" the value type
-func (p *Default) AddText(ctx context.Context, name string, value string, options ...interface{}) (Property, bool, error) {
+// AddParsed adds a single named property of a text value by "smart parsing" the value type
+func (p *Default) AddParsed(ctx context.Context, name string, value string, options ...interface{}) (Property, bool, error) {
 	prop, ok, err := p.pf.FromText(ctx, name, value, options...)
 	if err != nil {
 		return nil, false, err
@@ -95,8 +95,8 @@ func (p *Default) AddText(ctx context.Context, name string, value string, option
 	return prop, ok, nil
 }
 
-// AddAny adds a single named property of any value type
-func (p *Default) AddAny(ctx context.Context, name string, value interface{}, options ...interface{}) (Property, bool, error) {
+// Add adds a single named property of any value type
+func (p *Default) Add(ctx context.Context, name string, value interface{}, options ...interface{}) (Property, bool, error) {
 	prop, ok, err := p.pf.FromAny(ctx, name, value, options...)
 	if err != nil {
 		return nil, false, err

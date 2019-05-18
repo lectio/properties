@@ -46,17 +46,18 @@ func (suite *PropertiesSuite) TestMutableProperties() {
 	suite.NotNil(props, "Ensure initialization")
 	suite.Equal(uint(0), props.Size(ctx), "Should be zero")
 
-	prop, ok, err := props.AddAny(ctx, "custom", suite)
+	prop, ok, err := props.Add(ctx, "custom", suite)
 	suite.False(ok, "Should not have been created")
 	suite.NotNil(err, "Should have gotten an error")
 
-	prop, ok, err = props.AddAny(ctx, "text", "Test text")
+	prop, ok, err = props.Add(ctx, "text", "Test text")
 	suite.True(ok, "Should have been created")
 	suite.IsType(&DefaultTextProperty{}, prop, "Should have been created")
 
-	prop, ok, err = props.AddAny(ctx, "number", 100)
-	prop, ok, err = props.AddAny(ctx, "flag", true)
-	prop, ok, err = props.AddAny(ctx, "date", time.Now())
+	prop, ok, err = props.Add(ctx, "number", 100)
+	prop, ok, err = props.Add(ctx, "flag", true)
+	prop, ok, err = props.Add(ctx, "date", time.Now())
+	prop, ok, err = props.Add(ctx, "textList", []string{"one", "two"})
 }
 
 func (suite *PropertiesSuite) TestNoFrontMatter() {

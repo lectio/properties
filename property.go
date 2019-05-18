@@ -20,6 +20,12 @@ type TextProperty interface {
 	Value(context.Context) string
 }
 
+// TextListProperty holds a named string slice
+type TextListProperty interface {
+	Property
+	Value(context.Context) []string
+}
+
 // FlagProperty holds a named boolean flag
 type FlagProperty interface {
 	Property
@@ -120,4 +126,25 @@ func (p *DefaultTextProperty) AnyValue(context.Context) interface{} {
 // Value returns the property value when the type is important
 func (p *DefaultTextProperty) Value(context.Context) string {
 	return p.Text
+}
+
+// DefaultTextListProperty implements TextProperty
+type DefaultTextListProperty struct {
+	PropName PropertyName `json:"name"`
+	Slice    []string     `json:"value"`
+}
+
+// Name returns the property name
+func (p *DefaultTextListProperty) Name(context.Context) PropertyName {
+	return p.PropName
+}
+
+// AnyValue returns the property value useful when the type isn't important
+func (p *DefaultTextListProperty) AnyValue(context.Context) interface{} {
+	return p.Slice
+}
+
+// Value returns the property value when the type is important
+func (p *DefaultTextListProperty) Value(context.Context) []string {
+	return p.Slice
 }

@@ -47,9 +47,9 @@ type PropertyFactory interface {
 type Factory interface {
 	PropertyFactory(context.Context) PropertyFactory
 	EmptyMutable(context.Context, ...interface{}) MutableProperties
-	ImmutableFromStringMap(context.Context, map[string]interface{}, ...interface{}) (Properties, uint, error)
-	MutableFromStringMap(context.Context, map[string]interface{}, ...interface{}) (MutableProperties, uint, error)
-	MutableFromFrontMatter(context.Context, []byte, bool, ...interface{}) ([]byte, MutableProperties, uint, error)
+	ImmutableFromStringMap(context.Context, map[string]interface{}, AllowAddFunc, ...interface{}) (Properties, uint, error)
+	MutableFromStringMap(context.Context, map[string]interface{}, AllowAddFunc, ...interface{}) (MutableProperties, uint, error)
+	MutableFromFrontMatter(context.Context, []byte, bool, AllowAddFunc, AllowAddTextFunc, ...interface{}) ([]byte, MutableProperties, uint, error)
 }
 
 // DefaultPropertyFactory is the default instance
@@ -144,33 +144,33 @@ func (f *DefaultPropertiesFactory) EmptyMutable(ctx context.Context, options ...
 }
 
 // ImmutableFromStringMap returns a new Properties instance filled with the given items
-func (f *DefaultPropertiesFactory) ImmutableFromStringMap(ctx context.Context, items map[string]interface{}, options ...interface{}) (Properties, uint, error) {
-	return f.fromStringMap(ctx, items, options...)
+func (f *DefaultPropertiesFactory) ImmutableFromStringMap(ctx context.Context, items map[string]interface{}, allow AllowAddFunc, options ...interface{}) (Properties, uint, error) {
+	return f.fromStringMap(ctx, items, allow, options...)
 }
 
 // MutableFromStringMap returns a new Properties instance filled with the given items
-func (f *DefaultPropertiesFactory) MutableFromStringMap(ctx context.Context, items map[string]interface{}, options ...interface{}) (MutableProperties, uint, error) {
-	return f.fromStringMap(ctx, items, options...)
+func (f *DefaultPropertiesFactory) MutableFromStringMap(ctx context.Context, items map[string]interface{}, allow AllowAddFunc, options ...interface{}) (MutableProperties, uint, error) {
+	return f.fromStringMap(ctx, items, allow, options...)
 }
 
 // MutableFromFrontMatter returns a new Properties instance from content that looks like a markdown file with front matter
-func (f *DefaultPropertiesFactory) MutableFromFrontMatter(ctx context.Context, content []byte, smartParseFM bool, options ...interface{}) (bodyWithoutFrontMatter []byte, frontMatter MutableProperties, count uint, err error) {
-	return f.fromYAMLFrontMatter(ctx, content, smartParseFM, options...)
+func (f *DefaultPropertiesFactory) MutableFromFrontMatter(ctx context.Context, content []byte, smartParseFM bool, allow AllowAddFunc, allowText AllowAddTextFunc, options ...interface{}) (bodyWithoutFrontMatter []byte, frontMatter MutableProperties, count uint, err error) {
+	return f.fromYAMLFrontMatter(ctx, content, smartParseFM, allow, allowText, options...)
 }
 
 // FromStringMap returns a new properties instance based on a text map
-func (f *DefaultPropertiesFactory) fromStringMap(ctx context.Context, items map[string]interface{}, options ...interface{}) (MutableProperties, uint, error) {
+func (f *DefaultPropertiesFactory) fromStringMap(ctx context.Context, items map[string]interface{}, allow AllowAddFunc, options ...interface{}) (MutableProperties, uint, error) {
 	if items == nil {
 		return nil, 0, fmt.Errorf("items is Nil")
 	}
 
 	props := f.EmptyMutable(ctx, options...)
-	count, err := props.AddMap(ctx, items, options...)
+	count, err := props.AddMap(ctx, items, allow, options...)
 	return props, count, err
 }
 
 // fromYAMLFrontMatter will convert an input byte array like ---<stuff>---\n<body> into v as YAML and <body> as return value
-func (f *DefaultPropertiesFactory) fromYAMLFrontMatter(ctx context.Context, b []byte, smartParseFM bool, options ...interface{}) ([]byte, MutableProperties, uint, error) {
+func (f *DefaultPropertiesFactory) fromYAMLFrontMatter(ctx context.Context, b []byte, smartParseFM bool, allow AllowAddFunc, allowText AllowAddTextFunc, options ...interface{}) ([]byte, MutableProperties, uint, error) {
 	buf := bytes.NewBuffer(b)
 
 	var insideFrontMatter bool
@@ -221,14 +221,14 @@ func (f *DefaultPropertiesFactory) fromYAMLFrontMatter(ctx context.Context, b []
 			return nil, nil, 0, nil
 		}
 		props = f.EmptyMutable(ctx, options...)
-		count, err = props.AddTextMap(ctx, items, options...)
+		count, err = props.AddTextMap(ctx, items, allowText, options...)
 	} else {
 		items := make(map[string]interface{})
 		err := yaml.Unmarshal(b[yamlStartIndex:yamlEndIndex], items)
 		if err != nil {
 			return nil, nil, 0, nil
 		}
-		props, count, err = f.fromStringMap(ctx, items, options...)
+		props, count, err = f.fromStringMap(ctx, items, allow, options...)
 	}
 
 	return bytes.TrimSpace(b[yamlEndIndex:]), props, count, err

@@ -164,7 +164,7 @@ func (f *DefaultPropertiesFactory) fromStringMap(ctx context.Context, items map[
 		return nil, 0, fmt.Errorf("items is Nil")
 	}
 
-	props := f.EmptyMutable(ctx)
+	props := f.EmptyMutable(ctx, options...)
 	count, err := props.AddMap(ctx, items, options...)
 	return props, count, err
 }
@@ -220,7 +220,7 @@ func (f *DefaultPropertiesFactory) fromYAMLFrontMatter(ctx context.Context, b []
 		if err != nil {
 			return nil, nil, 0, nil
 		}
-		props = f.EmptyMutable(ctx)
+		props = f.EmptyMutable(ctx, options...)
 		count, err = props.AddTextMap(ctx, items, options...)
 	} else {
 		items := make(map[string]interface{})

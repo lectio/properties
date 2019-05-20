@@ -12,7 +12,7 @@ type PropertyName string
 type Property interface {
 	Name(context.Context) PropertyName
 	AnyValue(context.Context) interface{}
-	Copy(context.Context, map[string]interface{})
+	Copy(context.Context, map[string]interface{}, ...interface{})
 }
 
 // TextProperty holds a named string
@@ -52,7 +52,7 @@ type DefaultDateTimeProperty struct {
 }
 
 // Copy copies the key/value pair into the given map
-func (p *DefaultDateTimeProperty) Copy(ctx context.Context, m map[string]interface{}) {
+func (p *DefaultDateTimeProperty) Copy(ctx context.Context, m map[string]interface{}, options ...interface{}) {
 	m[string(p.PropName)] = p.Time
 }
 
@@ -78,7 +78,7 @@ type DefaultFlagProperty struct {
 }
 
 // Copy copies the key/value pair into the given map
-func (p *DefaultFlagProperty) Copy(ctx context.Context, m map[string]interface{}) {
+func (p *DefaultFlagProperty) Copy(ctx context.Context, m map[string]interface{}, options ...interface{}) {
 	m[string(p.PropName)] = p.Flag
 }
 
@@ -104,7 +104,7 @@ type DefaultCardinalProperty struct {
 }
 
 // Copy copies the key/value pair into the given map
-func (p *DefaultCardinalProperty) Copy(ctx context.Context, m map[string]interface{}) {
+func (p *DefaultCardinalProperty) Copy(ctx context.Context, m map[string]interface{}, options ...interface{}) {
 	m[string(p.PropName)] = p.Number
 }
 
@@ -130,7 +130,7 @@ type DefaultTextProperty struct {
 }
 
 // Copy copies the key/value pair into the given map
-func (p *DefaultTextProperty) Copy(ctx context.Context, m map[string]interface{}) {
+func (p *DefaultTextProperty) Copy(ctx context.Context, m map[string]interface{}, options ...interface{}) {
 	m[string(p.PropName)] = p.Text
 }
 
@@ -156,7 +156,7 @@ type DefaultTextListProperty struct {
 }
 
 // Copy copies the key/value pair into the given map
-func (p *DefaultTextListProperty) Copy(ctx context.Context, m map[string]interface{}) {
+func (p *DefaultTextListProperty) Copy(ctx context.Context, m map[string]interface{}, options ...interface{}) {
 	m[string(p.PropName)] = p.Slice
 }
 

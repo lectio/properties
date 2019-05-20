@@ -17,7 +17,7 @@ type AddPropertyEvent interface {
 }
 
 // MapAssignFunc is passed into Properties.Map() to assign values into a string map
-type MapAssignFunc func(context.Context, Property, map[string]interface{}) bool
+type MapAssignFunc func(context.Context, Property, map[string]interface{}, ...interface{}) bool
 
 // Properties manages a group of strongly typed properties, immutable
 type Properties interface {
@@ -30,10 +30,10 @@ type Properties interface {
 }
 
 // AllowAddFunc returns true if the property should be added
-type AllowAddFunc func(context.Context, string, interface{}, Property) (Property, bool, error)
+type AllowAddFunc func(context.Context, string, interface{}, Property, ...interface{}) (Property, bool, error)
 
 // AllowAddTextFunc returns true if the property should be added
-type AllowAddTextFunc func(context.Context, string, string, Property) (Property, bool, error)
+type AllowAddTextFunc func(context.Context, string, string, Property, ...interface{}) (Property, bool, error)
 
 // MutableProperties adds mutability to Properties
 type MutableProperties interface {
@@ -74,7 +74,7 @@ func newDefaultProperties(ctx context.Context, pf PropertyFactory, options ...in
 }
 
 // DefaultAllowAdd is passed into AddMap returns true if the property should be added
-func DefaultAllowAdd(ctx context.Context, givenName string, givenValue interface{}, createdProp Property) (Property, bool, error) {
+func DefaultAllowAdd(ctx context.Context, givenName string, givenValue interface{}, createdProp Property, options ...interface{}) (Property, bool, error) {
 	return createdProp, true, nil
 }
 
@@ -99,7 +99,7 @@ func (p *Default) AddMap(ctx context.Context, items map[string]interface{}, allo
 }
 
 // DefaultAllowAddTextFunc returns true if the property should be added
-func DefaultAllowAddTextFunc(ctx context.Context, givenName string, givenValue string, createdProp Property) (Property, bool, error) {
+func DefaultAllowAddTextFunc(ctx context.Context, givenName string, givenValue string, createdProp Property, options ...interface{}) (Property, bool, error) {
 	return createdProp, true, nil
 }
 
@@ -131,7 +131,7 @@ func (p *Default) AddParsedChecked(ctx context.Context, name string, value strin
 	}
 
 	if allow != nil {
-		prop, ok, err = allow(ctx, name, value, prop)
+		prop, ok, err = allow(ctx, name, value, prop, options...)
 	}
 
 	if ok {
@@ -148,7 +148,7 @@ func (p *Default) AddChecked(ctx context.Context, name string, value interface{}
 	}
 
 	if allow != nil {
-		prop, ok, err = allow(ctx, name, value, prop)
+		prop, ok, err = allow(ctx, name, value, prop, options...)
 	}
 
 	if ok {
@@ -224,8 +224,8 @@ func (p *Default) List(context.Context, ...interface{}) []Property {
 }
 
 // DefaultMapAssign is passed into Map() for default property assignment rule
-func DefaultMapAssign(ctx context.Context, p Property, dest map[string]interface{}) bool {
-	p.Copy(ctx, dest)
+func DefaultMapAssign(ctx context.Context, p Property, dest map[string]interface{}, options ...interface{}) bool {
+	p.Copy(ctx, dest, options...)
 	return true
 }
 
@@ -234,7 +234,7 @@ func (p *Default) Map(ctx context.Context, dest map[string]interface{}, assign M
 	var count uint
 	p.syncMap.Range(func(key, value interface{}) bool {
 		property := value.(Property)
-		keepGoing := assign(ctx, property, dest)
+		keepGoing := assign(ctx, property, dest, options...)
 		if keepGoing {
 			count++
 		}

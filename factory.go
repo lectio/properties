@@ -49,7 +49,7 @@ type Factory interface {
 	EmptyMutable(context.Context, ...interface{}) MutableProperties
 	ImmutableFromStringMap(context.Context, map[string]interface{}, AllowAddFunc, ...interface{}) (Properties, uint, error)
 	MutableFromStringMap(context.Context, map[string]interface{}, AllowAddFunc, ...interface{}) (MutableProperties, uint, error)
-	MutableFromFrontMatter(context.Context, []byte, bool, AllowAddFunc, AllowAddTextFunc, ...interface{}) ([]byte, MutableProperties, uint, error)
+	MutableFromFrontMatter(context.Context, []byte, AllowAddFunc, ...interface{}) ([]byte, MutableProperties, uint, error)
 }
 
 // DefaultPropertyFactory is the default instance
@@ -154,8 +154,8 @@ func (f *DefaultPropertiesFactory) MutableFromStringMap(ctx context.Context, ite
 }
 
 // MutableFromFrontMatter returns a new Properties instance from content that looks like a markdown file with front matter
-func (f *DefaultPropertiesFactory) MutableFromFrontMatter(ctx context.Context, content []byte, smartParseFM bool, allow AllowAddFunc, allowText AllowAddTextFunc, options ...interface{}) (bodyWithoutFrontMatter []byte, frontMatter MutableProperties, count uint, err error) {
-	return f.fromYAMLFrontMatter(ctx, content, smartParseFM, allow, allowText, options...)
+func (f *DefaultPropertiesFactory) MutableFromFrontMatter(ctx context.Context, content []byte, allow AllowAddFunc, options ...interface{}) (bodyWithoutFrontMatter []byte, frontMatter MutableProperties, count uint, err error) {
+	return f.fromYAMLFrontMatter(ctx, content, allow, options...)
 }
 
 // FromStringMap returns a new properties instance based on a text map
@@ -170,7 +170,7 @@ func (f *DefaultPropertiesFactory) fromStringMap(ctx context.Context, items map[
 }
 
 // fromYAMLFrontMatter will convert an input byte array like ---<stuff>---\n<body> into v as YAML and <body> as return value
-func (f *DefaultPropertiesFactory) fromYAMLFrontMatter(ctx context.Context, b []byte, smartParseFM bool, allow AllowAddFunc, allowText AllowAddTextFunc, options ...interface{}) ([]byte, MutableProperties, uint, error) {
+func (f *DefaultPropertiesFactory) fromYAMLFrontMatter(ctx context.Context, b []byte, allow AllowAddFunc, options ...interface{}) ([]byte, MutableProperties, uint, error) {
 	buf := bytes.NewBuffer(b)
 
 	var insideFrontMatter bool
@@ -210,26 +210,17 @@ func (f *DefaultPropertiesFactory) fromYAMLFrontMatter(ctx context.Context, b []
 		return nil, nil, 0, fmt.Errorf("Unexplained front matter parser error; insideFrontMatter: %v, yamlStartIndex: %v, yamlEndIndex: %v", insideFrontMatter, yamlStartIndex, yamlEndIndex)
 	}
 
+	items := make(map[string]interface{})
+
 	var props MutableProperties
 	var count uint
 	var err error
 
-	if smartParseFM {
-		items := make(map[string]string)
-		err := yaml.Unmarshal(b[yamlStartIndex:yamlEndIndex], items)
-		if err != nil {
-			return nil, nil, 0, nil
-		}
-		props = f.EmptyMutable(ctx, options...)
-		count, err = props.AddTextMap(ctx, items, allowText, options...)
-	} else {
-		items := make(map[string]interface{})
-		err := yaml.Unmarshal(b[yamlStartIndex:yamlEndIndex], items)
-		if err != nil {
-			return nil, nil, 0, nil
-		}
-		props, count, err = f.fromStringMap(ctx, items, allow, options...)
+	err = yaml.Unmarshal(b[yamlStartIndex:yamlEndIndex], items)
+	if err != nil {
+		return nil, nil, 0, nil
 	}
+	props, count, err = f.fromStringMap(ctx, items, allow, options...)
 
 	return bytes.TrimSpace(b[yamlEndIndex:]), props, count, err
 }

@@ -62,7 +62,7 @@ func (suite *PropertiesSuite) TestMutableProperties() {
 
 func (suite *PropertiesSuite) TestNoFrontMatter() {
 	ctx := context.Background()
-	bodyBytes, props, count, err := suite.factory.MutableFromFrontMatter(ctx, []byte(noFrontMatter), false, nil, nil)
+	bodyBytes, props, count, err := suite.factory.MutableFromFrontMatter(ctx, []byte(noFrontMatter), nil)
 	body := string(bodyBytes)
 	suite.Nil(err, "Shouldn't have any errors")
 	suite.Nil(props, "Should not be initialized, there is no front matter")
@@ -72,7 +72,7 @@ func (suite *PropertiesSuite) TestNoFrontMatter() {
 
 func (suite *PropertiesSuite) TestValidFrontMatter() {
 	ctx := context.Background()
-	bodyBytes, props, count, err := suite.factory.MutableFromFrontMatter(ctx, []byte(validFrontMatter), false, nil, nil)
+	bodyBytes, props, count, err := suite.factory.MutableFromFrontMatter(ctx, []byte(validFrontMatter), nil)
 	body := string(bodyBytes)
 
 	suite.Nil(err, "Shouldn't have any errors")
@@ -95,7 +95,7 @@ func (suite *PropertiesSuite) TestValidFrontMatter() {
 
 func (suite *PropertiesSuite) TestValidSmartParsedFrontMatter() {
 	ctx := context.Background()
-	bodyBytes, props, count, err := suite.factory.MutableFromFrontMatter(ctx, []byte(validFrontMatter), false, nil, nil)
+	bodyBytes, props, count, err := suite.factory.MutableFromFrontMatter(ctx, []byte(validFrontMatter), nil)
 	body := string(bodyBytes)
 
 	suite.Nil(err, "Shouldn't have any errors")
@@ -119,7 +119,7 @@ func (suite *PropertiesSuite) TestValidSmartParsedFrontMatter() {
 
 func (suite *PropertiesSuite) TestInvalidFrontMatter() {
 	ctx := context.Background()
-	bodyBytes, props, count, err := suite.factory.MutableFromFrontMatter(ctx, []byte(invalidFrontMatter1), false, nil, nil)
+	bodyBytes, props, count, err := suite.factory.MutableFromFrontMatter(ctx, []byte(invalidFrontMatter1), nil)
 
 	suite.EqualError(err, "Unexplained front matter parser error; insideFrontMatter: true, yamlStartIndex: 5, yamlEndIndex: 0")
 	suite.Nil(props, "Should not be initialized")

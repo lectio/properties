@@ -12,6 +12,7 @@ type PropertyName string
 type Property interface {
 	Name(context.Context) PropertyName
 	AnyValue(context.Context) interface{}
+	Copy(context.Context, map[string]interface{})
 }
 
 // TextProperty holds a named string
@@ -50,6 +51,11 @@ type DefaultDateTimeProperty struct {
 	Time     time.Time    `json:"value"`
 }
 
+// Copy copies the key/value pair into the given map
+func (p *DefaultDateTimeProperty) Copy(ctx context.Context, m map[string]interface{}) {
+	m[string(p.PropName)] = p.Time
+}
+
 // Name returns the property name
 func (p *DefaultDateTimeProperty) Name(context.Context) PropertyName {
 	return p.PropName
@@ -69,6 +75,11 @@ func (p *DefaultDateTimeProperty) Value(context.Context) time.Time {
 type DefaultFlagProperty struct {
 	PropName PropertyName `json:"name"`
 	Flag     bool         `json:"value"`
+}
+
+// Copy copies the key/value pair into the given map
+func (p *DefaultFlagProperty) Copy(ctx context.Context, m map[string]interface{}) {
+	m[string(p.PropName)] = p.Flag
 }
 
 // Name returns the property name
@@ -92,6 +103,11 @@ type DefaultCardinalProperty struct {
 	Number   int64        `json:"value"`
 }
 
+// Copy copies the key/value pair into the given map
+func (p *DefaultCardinalProperty) Copy(ctx context.Context, m map[string]interface{}) {
+	m[string(p.PropName)] = p.Number
+}
+
 // Name returns the property name
 func (p *DefaultCardinalProperty) Name(context.Context) PropertyName {
 	return p.PropName
@@ -113,6 +129,11 @@ type DefaultTextProperty struct {
 	Text     string       `json:"value"`
 }
 
+// Copy copies the key/value pair into the given map
+func (p *DefaultTextProperty) Copy(ctx context.Context, m map[string]interface{}) {
+	m[string(p.PropName)] = p.Text
+}
+
 // Name returns the property name
 func (p *DefaultTextProperty) Name(context.Context) PropertyName {
 	return p.PropName
@@ -128,10 +149,15 @@ func (p *DefaultTextProperty) Value(context.Context) string {
 	return p.Text
 }
 
-// DefaultTextListProperty implements TextProperty
+// DefaultTextListProperty implements TextListProperty
 type DefaultTextListProperty struct {
 	PropName PropertyName `json:"name"`
 	Slice    []string     `json:"value"`
+}
+
+// Copy copies the key/value pair into the given map
+func (p *DefaultTextListProperty) Copy(ctx context.Context, m map[string]interface{}) {
+	m[string(p.PropName)] = p.Slice
 }
 
 // Name returns the property name

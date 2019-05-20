@@ -225,7 +225,7 @@ func (p *Default) List(context.Context, ...interface{}) []Property {
 
 // DefaultMapAssign is passed into Map() for default property assignment rule
 func DefaultMapAssign(ctx context.Context, p Property, dest map[string]interface{}) bool {
-	dest[string(p.Name(ctx))] = p.AnyValue(ctx)
+	p.Copy(ctx, dest)
 	return true
 }
 

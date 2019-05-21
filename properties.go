@@ -231,13 +231,14 @@ func DefaultMapAssign(ctx context.Context, p Property, dest map[string]interface
 
 // Map returns all the properties as a map
 func (p *Default) Map(ctx context.Context, dest map[string]interface{}, assign MapAssignFunc, options ...interface{}) uint {
+	if assign == nil {
+		assign = DefaultMapAssign
+	}
+
 	var count uint
 	p.syncMap.Range(func(key, value interface{}) bool {
 		property := value.(Property)
-		var keepGoing bool
-		if assign != nil {
-			keepGoing = assign(ctx, property, dest, options...)
-		}
+		keepGoing := assign(ctx, property, dest, options...)
 		if keepGoing {
 			count++
 		}

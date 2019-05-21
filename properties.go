@@ -234,7 +234,10 @@ func (p *Default) Map(ctx context.Context, dest map[string]interface{}, assign M
 	var count uint
 	p.syncMap.Range(func(key, value interface{}) bool {
 		property := value.(Property)
-		keepGoing := assign(ctx, property, dest, options...)
+		var keepGoing bool
+		if assign != nil {
+			keepGoing = assign(ctx, property, dest, options...)
+		}
 		if keepGoing {
 			count++
 		}
